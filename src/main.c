@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+//#include <my_file_I2C.c>
 
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
@@ -30,6 +31,8 @@
 #include "bsp_trace.h"
 
 #include "sleep.h"
+
+#include "semphr.h"
 
 #define STACK_SIZE_FOR_TASK    (configMINIMAL_STACK_SIZE + 10)
 #define TASK_PRIORITY          (tskIDLE_PRIORITY + 1)
@@ -79,6 +82,8 @@ int main(void)
   /* do not let to sleep deeper than define */
   SLEEP_SleepBlockBegin((SLEEP_EnergyMode_t)(configSLEEP_MODE + 1));
 #endif
+
+ // BSP_I2C_Init(uint8_t addr);
 
   /* Parameters value for taks*/
   static TaskParams_t parametersToTask1 = { pdMS_TO_TICKS(1000), 0 };
