@@ -33,6 +33,7 @@
 #include "sleep.h"
 
 #include "semphr.h"
+#include "my_file.h"
 
 #define STACK_SIZE_FOR_TASK    (configMINIMAL_STACK_SIZE + 10)
 #define TASK_PRIORITY          (tskIDLE_PRIORITY + 1)
@@ -60,9 +61,26 @@ static void LedBlink(void *pParameters)
   }
 }
 
+static void comprovacio(void *pParameters)
+{
+
+  for (;; ) {
+	bool funciona=I2C_Test_1(0xFF);
+	if(funciona){
+    printf("funciona");
+	}
+	else{
+		printf("no funciona");
+	}
+
+  }
+}
+
 /***************************************************************************//**
  * @brief  Main function
  ******************************************************************************/
+
+
 int main(void)
 {
   /* Chip errata */
@@ -89,12 +107,26 @@ int main(void)
   static TaskParams_t parametersToTask1 = { pdMS_TO_TICKS(1000), 0 };
   static TaskParams_t parametersToTask2 = { pdMS_TO_TICKS(500), 1 };
 
+
   /*Create two task for blinking leds*/
   xTaskCreate(LedBlink, (const char *) "LedBlink1", STACK_SIZE_FOR_TASK, &parametersToTask1, TASK_PRIORITY, NULL);
   xTaskCreate(LedBlink, (const char *) "LedBlink2", STACK_SIZE_FOR_TASK, &parametersToTask2, TASK_PRIORITY, NULL);
+
+  xTaskCreate(comprovacio, (const char *) "Comprovacio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
+
+
+
 
   /*Start FreeRTOS Scheduler*/
   vTaskStartScheduler();
 
   return 0;
+}
+
+int _write(int file, const char *ptr, int len) {
+    int x;
+    for (x = 0; x < len; x++) {
+       ITM_SendChar (*ptr++);
+    }
+    return (len);
 }

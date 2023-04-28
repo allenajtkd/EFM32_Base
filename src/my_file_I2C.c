@@ -15,7 +15,7 @@ static uint8_t device_addr;
 
 void BSP_I2C_Init(uint8_t addr) {
 
-	vSemaphoreCreateBinary(sem);
+	sem = vSemaphoreCreateBinary();
 	if (xSemaphoreTake(sem, (TickType_t)portMAX_DELAY) == pdTRUE)
 	{
 	
@@ -71,7 +71,7 @@ bool I2C_WriteRegister(uint8_t reg, uint8_t data) {
 		xSemaphoreGive(sem);
 	}
 		
-	
+	return false;
 }
 
 /**
@@ -111,6 +111,7 @@ bool I2C_ReadRegister(uint8_t reg, uint8_t *val) {
 	}
 	
 	bool I2C_Test() {
+
 		uint8_t data;
 	
 		I2C_ReadRegister(0xD0, &data);
@@ -125,5 +126,20 @@ bool I2C_ReadRegister(uint8_t reg, uint8_t *val) {
 	
 	xSemaphoreGive(sem);
 	}
+return false;
+}
 
+bool I2C_Test_1(uint8_t reg) {
+
+	uint8_t data;
+
+	I2C_ReadRegister(reg, &data);
+
+	printf("I2C: %02X\n", data);
+
+	if (data == 0x15) {
+		return true;
+	} else {
+		return false;
+	}
 }
