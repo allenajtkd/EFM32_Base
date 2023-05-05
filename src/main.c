@@ -65,12 +65,12 @@ static void comprovacio(void *pParameters)
 {
 
   for (;; ) {
-	bool funciona=I2C_Test_1(0xFF);
+	bool funciona=I2C_Test_1(0xFF); //esto peta
 	if(funciona){
-    printf("funciona");
+    printf("funciona\n");
 	}
 	else{
-		printf("no funciona");
+		printf("no funciona\n");
 	}
 
   }
@@ -87,6 +87,7 @@ int main(void)
   CHIP_Init();
   /* If first word of user data page is non-zero, enable Energy Profiler trace */
   BSP_TraceProfilerSetup();
+  BSP_TraceSwoSetup();
 
   /* Initialize LED driver */
   BSP_LedsInit();
@@ -96,12 +97,12 @@ int main(void)
 
   /* Initialize SLEEP driver, no calbacks are used */
   SLEEP_Init(NULL, NULL);
-#if (configSLEEP_MODE < 3)
-  /* do not let to sleep deeper than define */
-  SLEEP_SleepBlockBegin((SLEEP_EnergyMode_t)(configSLEEP_MODE + 1));
-#endif
-
- // BSP_I2C_Init(uint8_t addr);
+  #if (configSLEEP_MODE < 3)
+    /* do not let to sleep deeper than define */
+    SLEEP_SleepBlockBegin((SLEEP_EnergyMode_t)(configSLEEP_MODE + 1));
+  #endif
+  uint8_t addr = 0xAE;
+  BSP_I2C_Init(addr);
 
   /* Parameters value for taks*/
   static TaskParams_t parametersToTask1 = { pdMS_TO_TICKS(1000), 0 };

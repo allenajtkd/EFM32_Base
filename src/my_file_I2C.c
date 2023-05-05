@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include "em_i2c.h"
+#include "em_gpio.h"
+#include "em_cmu.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "semphr.h"
@@ -5,17 +11,12 @@
 SemaphoreHandle_t sem;
 
 
-#include <stdio.h>
-#include <stdbool.h>
-#include "em_i2c.h"
-#include "em_gpio.h"
-#include "em_cmu.h"
 
 static uint8_t device_addr;
 
 void BSP_I2C_Init(uint8_t addr) {
 
-	sem = vSemaphoreCreateBinary();
+	 vSemaphoreCreateBinary(sem);
 	if (xSemaphoreTake(sem, (TickType_t)portMAX_DELAY) == pdTRUE)
 	{
 	
@@ -102,31 +103,20 @@ bool I2C_ReadRegister(uint8_t reg, uint8_t *val) {
 		}
 	
 		if (I2C_Status != i2cTransferDone) {
+			xSemaphoreGive(sem);
 			return false;
 		}
 	
 		*val = data[0];
-	
+
+		xSemaphoreGive(sem);
 		return true;
 	}
 	
-	bool I2C_Test() {
-
-		uint8_t data;
 	
-		I2C_ReadRegister(0xD0, &data);
-	
-		printf("I2C: %02X\n", data);
-	
-		if (data == 0x60) {
-			return true;
-		} else {
-			return false;
-		}
 	
 	xSemaphoreGive(sem);
-	}
-return false;
+	return false;
 }
 
 bool I2C_Test_1(uint8_t reg) {
@@ -135,11 +125,29 @@ bool I2C_Test_1(uint8_t reg) {
 
 	I2C_ReadRegister(reg, &data);
 
-	printf("I2C: %02X\n", data);
+
 
 	if (data == 0x15) {
+		printf("true %d", data);
 		return true;
 	} else {
+		printf("false");
 		return false;
 	}
+}
+
+
+bool I2C_Test() {
+
+		uint8_t data;
+
+		I2C_ReadRegister(0xD0, &data);
+
+		printf("I2C: %02X\n", data);
+
+		if (data == 0x60) {
+			return true;
+		} else {
+			return false;
+		}
 }
