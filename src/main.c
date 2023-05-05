@@ -65,7 +65,7 @@ static void comprovacio(void *pParameters)
 {
 
   for (;; ) {
-	bool funciona=I2C_Test_1(0xFF); //esto peta
+	bool funciona=I2C_Test_1(0xFF);
 	if(funciona){
     printf("funciona\n");
 	}
@@ -115,7 +115,11 @@ int main(void)
 
   xTaskCreate(comprovacio, (const char *) "Comprovacio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
 
-
+  for(;;){
+	  uint8_t valor;
+	  I2C_ReadRegister( 0x07, &valor);
+	  printf(valor);
+  }
 
 
   /*Start FreeRTOS Scheduler*/

@@ -128,7 +128,7 @@ bool I2C_Test_1(uint8_t reg) {
 
 
 	if (data == 0x15) {
-		printf("true %d", data);
+		printf("true \n");
 		return true;
 	} else {
 		printf("false");
