@@ -76,6 +76,29 @@ static void comprovacio(void *pParameters)
   }
 }
 
+static void activacio(void *pParameters)
+{
+	for (;; ) {
+		uint8_t data=0x07;
+		I2C_WriteRegister(0x09, data);
+
+		uint8_t data2=0x03;
+		I2C_WriteRegister(0x11, data2);
+
+		//data=0x02;
+		//I2C_WriteRegister(0x11, data);
+		//data=0x02;
+	    //I2C_WriteRegister(0x12, data);
+
+
+
+	}
+
+
+}
+
+
+
 /***************************************************************************//**
  * @brief  Main function
  ******************************************************************************/
@@ -113,13 +136,11 @@ int main(void)
   xTaskCreate(LedBlink, (const char *) "LedBlink1", STACK_SIZE_FOR_TASK, &parametersToTask1, TASK_PRIORITY, NULL);
   xTaskCreate(LedBlink, (const char *) "LedBlink2", STACK_SIZE_FOR_TASK, &parametersToTask2, TASK_PRIORITY, NULL);
 
-  xTaskCreate(comprovacio, (const char *) "Comprovacio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
+ // xTaskCreate(comprovacio, (const char *) "Comprovacio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
 
-  for(;;){
-	  uint8_t valor;
-	  I2C_ReadRegister( 0x07, &valor);
-	  printf(valor);
-  }
+  xTaskCreate(activacio, (const char *) "activacio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
+  //xTaskCreate(lectura, (const char *) "lectura1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
+  //xTaskCreate(accio, (const char *) "accio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
 
 
   /*Start FreeRTOS Scheduler*/

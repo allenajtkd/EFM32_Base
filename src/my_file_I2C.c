@@ -64,14 +64,17 @@ bool I2C_WriteRegister(uint8_t reg, uint8_t data) {
 		}
 	
 		if (I2C_Status != i2cTransferDone) {
+
 			ret_value = false;
 		} else {
+
 			ret_value = true;
 		}
-		return ret_value;
 		xSemaphoreGive(sem);
+		return ret_value;
+
 	}
-		
+	xSemaphoreGive(sem);
 	return false;
 }
 
