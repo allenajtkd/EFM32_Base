@@ -38,6 +38,11 @@
 #define STACK_SIZE_FOR_TASK    (configMINIMAL_STACK_SIZE + 10)
 #define TASK_PRIORITY          (tskIDLE_PRIORITY + 1)
 
+// Implementaciones
+#define QUEUE_LENGTH 10
+QueueHandle_t queue1;
+QueueHandle_t queue2;
+
 /* Structure with parameters for LedBlink */
 typedef struct {
   /* Delay between blink of led */
@@ -72,11 +77,47 @@ static void comprovacio(void *pParameters)
 	else{
 		printf("no funciona\n");
 	}
-
   }
 }
 
 static void activacio(void *pParameters)
+{
+
+		uint8_t data=0x07;
+		I2C_WriteRegister(0x09, data);
+
+		uint8_t data2=0x7F;
+		I2C_WriteRegister(0x0E, data2); //Intensidad LED verde
+
+		uint8_t datared = 0x7F;
+		I2C_WriteRegister(0x0C, datared); //Intensidad LED rojo
+
+		uint8_t data3=0x03;
+		I2C_WriteRegister(0x11, data3); // Activar bit para encender LED verde
+
+		uint8_t data4=0x01;
+		I2C_WriteRegister(0x12, data4); // Activar bit para encender LED rojo
+
+		//data=0x02;
+		//I2C_WriteRegister(0x11, data);
+		//data=0x02;
+	    //I2C_WriteRegister(0x12, data);
+
+}
+
+static void lectura(void *pParameters)
+{
+	for (;; ) {
+		uint8_t fifo;
+		I2C_ReadRegister(0x07, fifo);
+
+		xQueueSend(queue1,&fifo,portMAX_DELAY);
+
+
+	}
+}
+
+static void interpretacio_dades(void *pParameters)
 {
 	for (;; ) {
 		uint8_t data=0x07;
@@ -89,12 +130,7 @@ static void activacio(void *pParameters)
 		//I2C_WriteRegister(0x11, data);
 		//data=0x02;
 	    //I2C_WriteRegister(0x12, data);
-
-
-
 	}
-
-
 }
 
 
@@ -138,9 +174,18 @@ int main(void)
 
  // xTaskCreate(comprovacio, (const char *) "Comprovacio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
 
+  QueueHandle_t queue1;
+  QueueHandle_t queue2;
+
+
+  queue1 = xQueueCreate(QUEUE_LENGTH, sizeof(uint8_t));
+  queue2 = xQueueCreate(QUEUE_LENGTH, sizeof(uint8_t));
+
+
+  xTaskCreate(lectura, (const char *) "lectura1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
+  xTaskCreate(interpretacio_dades, (const char *) "interpretacio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
   xTaskCreate(activacio, (const char *) "activacio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
-  //xTaskCreate(lectura, (const char *) "lectura1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
-  //xTaskCreate(accio, (const char *) "accio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
+ // xTaskCreate(llegir_dades, (const char *) "lectura", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
 
 
   /*Start FreeRTOS Scheduler*/
