@@ -80,60 +80,79 @@ static void comprovacio(void *pParameters)
   }
 }
 
-static void activacio(void *pParameters)
-{
-
-		uint8_t data=0x07;
-		I2C_WriteRegister(0x09, data);
-
-		uint8_t data2=0x7F;
-		I2C_WriteRegister(0x0E, data2); //Intensidad LED verde
-
-		uint8_t datared = 0x7F;
-		I2C_WriteRegister(0x0C, datared); //Intensidad LED rojo
-
-		uint8_t data3=0x03;
-		I2C_WriteRegister(0x11, data3); // Activar bit para encender LED verde
-
-		uint8_t data4=0x01;
-		I2C_WriteRegister(0x12, data4); // Activar bit para encender LED rojo
-
-		//data=0x02;
-		//I2C_WriteRegister(0x11, data);
-		//data=0x02;
-	    //I2C_WriteRegister(0x12, data);
-
-}
 
 static void lectura(void *pParameters)
 {
+	uint8_t fifo=10;
 	for (;; ) {
-		uint8_t fifo;
-		I2C_ReadRegister(0x07, fifo);
 
 		xQueueSend(queue1,&fifo,portMAX_DELAY);
 
+		if (fifo<150){
+			fifo+=10;
+		}
+		else{
+			fifo=10;
+		}
+
+		vTaskDelay(pdMS_TO_TICKS(1000));
+
+
 
 	}
 }
-
 static void interpretacio_dades(void *pParameters)
 {
 	for (;; ) {
-		uint8_t data=0x07;
-		I2C_WriteRegister(0x09, data);
 
-		uint8_t data2=0x03;
-		I2C_WriteRegister(0x11, data2);
+		uint8_t read;
+		bool led_active=false;
+		xQueueReceive(queue1,&read,portMAX_DELAY);
 
-		//data=0x02;
-		//I2C_WriteRegister(0x11, data);
-		//data=0x02;
-	    //I2C_WriteRegister(0x12, data);
+		if( read<100){
+
+			xQueueSend(queue2,&led_active,portMAX_DELAY);
+
+		}
+		else{
+			led_active=true;
+			xQueueSend(queue2,&led_active,portMAX_DELAY);
+		}
+
+
 	}
 }
 
+static void activacio(void *pParameters)
+{
+	for (;; ) {
+		bool activar_led;
+		xQueueReceive(queue2,&activar_led,portMAX_DELAY);
 
+
+		I2C_WriteRegister(0x09, 0x07);
+
+		I2C_WriteRegister(0x11, 0x03); // Activar bit para encender LED verde
+
+
+		if(activar_led==true){
+
+		I2C_WriteRegister(0x11, 0x10);// Activar bit para encender LED red
+
+		I2C_WriteRegister(0x0C, 0x7F);//Intensidad LED rojo
+		}
+		else{
+
+			I2C_WriteRegister(0x11, 0x03); // Activar bit para encender LED verde
+
+			I2C_WriteRegister(0x0E, 0x7F); //Intensidad LED verde
+		}
+
+
+
+	}
+
+}
 
 /***************************************************************************//**
  * @brief  Main function
@@ -173,10 +192,6 @@ int main(void)
   xTaskCreate(LedBlink, (const char *) "LedBlink2", STACK_SIZE_FOR_TASK, &parametersToTask2, TASK_PRIORITY, NULL);
 
  // xTaskCreate(comprovacio, (const char *) "Comprovacio1", STACK_SIZE_FOR_TASK, NULL, TASK_PRIORITY, NULL);
-
-  QueueHandle_t queue1;
-  QueueHandle_t queue2;
-
 
   queue1 = xQueueCreate(QUEUE_LENGTH, sizeof(uint8_t));
   queue2 = xQueueCreate(QUEUE_LENGTH, sizeof(uint8_t));
